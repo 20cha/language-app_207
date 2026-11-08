@@ -351,8 +351,23 @@
                 }
             };
 
-            const apiKey = ""; // API Key provided by runtime
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+            // 기기(localStorage)에 저장된 API 키 불러오기
+            let apiKey = localStorage.getItem('my_gemini_key');
+            if (!apiKey) {
+                apiKey = prompt("나만의 단어장에 오신 것을 환영합니다!\n발급받은 Gemini API 키(AIzaSy...)를 입력해주세요.\n(이 키는 깃허브 서버가 아닌 현재 사용 중인 기기에만 안전하게 저장됩니다.)");
+                if (apiKey) {
+                    localStorage.setItem('my_gemini_key', apiKey.trim());
+                } else {
+                    // 키 입력을 취소한 경우 초기 화면으로 복귀
+                    alert("API 키가 입력되지 않아 초기 화면으로 돌아갑니다. 새로고침 후 다시 시도해주세요.");
+                    showView('setup-view');
+                    resetCard();
+                    return; 
+                }
+            }
+
+            // 최신 안정화 모델(gemini-1.5-flash)로 호출 URL 업데이트
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
             try {
                 const response = await fetch(apiUrl, {
@@ -382,6 +397,12 @@
             } catch (error) {
                 console.error("Error fetching data:", error);
                 
+                // 에러 발생 시 localStorage에 잘못된 키가 저장되어 있을 수 있으므로 초기화 유도
+                if (retryCount >= 2) {
+                    // 키가 잘못되었을 가능성이 높으므로 삭제하여 다음 번에 다시 묻도록 설정
+                    localStorage.removeItem('my_gemini_key');
+                }
+
                 // Exponential backoff logic for retries
                 if (retryCount < 2) {
                     const delay = Math.pow(2, retryCount) * 1000;
@@ -389,7 +410,7 @@
                 } else {
                     showView('learning-view');
                     errorMsgEl.classList.remove('hidden');
-                    errorMsgEl.innerText = "Network error or API limit reached. Please try again.";
+                    errorMsgEl.innerText = "API 통신 오류가 발생했습니다. 키가 잘못되었거나 한도를 초과했습니다. 다시 시작해주세요.";
                 }
             } finally {
                 // Restore button state
@@ -484,7 +505,7 @@
             }
         }
 
-        // Web Speech API를 활용한 듣기 기능 (textToPlay 파라미터 추가)
+        // Web Speech API를 활용한 듣기 기능
         function playAudio(event, textToPlay = currentTargetText) {
             // 카드가 뒤집히는 것을 방지
             if (event) event.stopPropagation(); 
