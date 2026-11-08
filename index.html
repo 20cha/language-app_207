@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LingoFlash - AI Language Learning</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             margin: 0;
@@ -20,15 +20,16 @@
         .perspective-1000 {
             perspective: 1000px;
         }
-        
+
         .transform-style-3d {
             transform-style: preserve-3d;
         }
-        
+
         .backface-hidden {
             backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
-        
+
         .rotate-y-180 {
             transform: rotateY(180deg);
         }
@@ -51,6 +52,15 @@
             animation: spin 1s linear infinite;
         }
 
+        .spinner-sm {
+            border: 2px solid rgba(79, 70, 229, 0.25);
+            border-radius: 50%;
+            border-top: 2px solid #4f46e5;
+            width: 18px;
+            height: 18px;
+            animation: spin 0.8s linear infinite;
+        }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -64,123 +74,209 @@
 </head>
 <body class="text-gray-800 antialiased selection:bg-indigo-300 selection:text-indigo-900">
 
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-300 opacity-0 -translate-y-2">
+        <div id="toast-box" class="bg-gray-900/95 text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-2xl shadow-xl border border-white/15 flex items-center gap-2">
+            <span id="toast-text">알림</span>
+        </div>
+    </div>
+
     <div class="flex-grow flex items-center justify-center p-4">
-        
+
         <!-- Main Application Container -->
         <div class="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-3xl w-full max-w-md p-6 relative overflow-hidden">
-            
+
             <!-- Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            <div class="flex items-center justify-between mb-5">
+                <div class="w-9"></div>
+                <div class="text-center">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        LingoFlash
+                    </h1>
+                    <p class="text-indigo-100 text-xs sm:text-sm mt-0.5">Learn new words & sentences daily</p>
+                </div>
+                <!-- Saved Bookmarks Button -->
+                <button type="button" id="open-bookmarks-btn" onclick="toggleBookmarksModal(true)" class="relative p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white transition-colors focus:outline-none" title="내 단어장 (즐겨찾기)">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
                     </svg>
-                    LingoFlash
-                </h1>
-                <p class="text-indigo-100 text-sm mt-1">Learn new words & sentences daily</p>
+                    <span id="bookmark-count-badge" class="hidden absolute -top-1 -right-1 bg-amber-400 text-indigo-950 text-[10px] font-bold w-4 h-4 rounded-full items-center justify-center">0</span>
+                </button>
             </div>
 
             <!-- View 1: Setup Configuration -->
-            <div id="setup-view" class="space-y-4 transition-opacity duration-300">
+            <div id="setup-view" class="space-y-3.5 transition-opacity duration-300">
                 <!-- API Key Input Section -->
                 <div class="bg-white/15 p-3.5 rounded-2xl border border-white/20">
-                    <label class="block text-indigo-100 text-xs font-semibold mb-1.5" for="api-key-input">🔑 Gemini API Key</label>
-                    <input type="password" id="api-key-input" placeholder="키(AIzaSy... 또는 AQ...)를 입력하세요" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all placeholder:text-gray-400" />
-                    <p class="text-[11px] text-indigo-200 mt-1">* 입력한 키는 깃허브가 아닌 현재 기기에만 안전하게 저장됩니다.</p>
-                </div>
-
-                <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5" for="target-lang">I want to learn:</label>
-                    <select id="target-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-2.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
-                        <option value="Spanish">Spanish 🇪🇸</option>
-                        <option value="French">French 🇫🇷</option>
-                        <option value="German">German 🇩🇪</option>
-                        <option value="Japanese">Japanese 🇯🇵</option>
-                        <option value="Korean">Korean 🇰🇷</option>
-                        <option value="Mandarin Chinese">Chinese (Mandarin) 🇨🇳</option>
-                        <option value="Italian">Italian 🇮🇹</option>
-                        <option value="Russian">Russian 🇷🇺</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5" for="native-lang">My native language is:</label>
-                    <select id="native-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-2.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
-                        <option value="English">English 🇬🇧/🇺🇸</option>
-                        <option value="Korean" selected>Korean 🇰🇷</option>
-                        <option value="Spanish">Spanish 🇪🇸</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5">I want to practice:</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button type="button" id="btn-word" onclick="selectMode('word')" class="mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 font-semibold shadow hover:bg-indigo-400 transition-colors">
-                            Words
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-indigo-100 text-xs font-semibold" for="api-key-input">🔑 Gemini API Key</label>
+                        <select id="model-select" aria-label="Gemini Model" class="bg-white/20 text-white text-[11px] font-medium rounded-lg px-2 py-0.5 border border-white/20 outline-none focus:ring-1 focus:ring-indigo-300">
+                            <option value="gemini-2.5-flash-lite" class="text-gray-800">gemini-2.5-flash-lite (권장)</option>
+                            <option value="gemini-3.5-flash-lite" class="text-gray-800">gemini-3.5-flash-lite (최신)</option>
+                            <option value="gemini-3.8-flash" class="text-gray-800">gemini-3.8-flash</option>
+                            <option value="gemini-2.5-flash" class="text-gray-800">gemini-2.5-flash</option>
+                        </select>
+                    </div>
+                    <div class="relative flex items-center">
+                        <input type="password" id="api-key-input" placeholder="키(AIzaSy...)를 입력하세요" class="w-full bg-white/90 border-0 rounded-xl pl-3 pr-9 py-2 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all placeholder:text-gray-400" />
+                        <button type="button" id="toggle-key-btn" onclick="toggleKeyVisibility()" class="absolute right-2.5 text-gray-500 hover:text-gray-700 text-xs focus:outline-none" title="키 보기/숨기기">
+                            👁️
                         </button>
-                        <button type="button" id="btn-sentence" onclick="selectMode('sentence')" class="mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors">
-                            Sentences
+                    </div>
+                    <p class="text-[11px] text-indigo-200 mt-1.5">* 입력한 키는 깃허브가 아닌 현재 기기에만 안전하게 저장됩니다.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-indigo-100 text-xs font-semibold mb-1" for="target-lang">배울 언어 (Target):</label>
+                        <select id="target-lang" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2.5 text-sm text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                            <option value="Spanish">Spanish 🇪🇸</option>
+                            <option value="English">English 🇺🇸</option>
+                            <option value="Japanese">Japanese 🇯🇵</option>
+                            <option value="French">French 🇫🇷</option>
+                            <option value="German">German 🇩🇪</option>
+                            <option value="Mandarin Chinese">Chinese 🇨🇳</option>
+                            <option value="Italian">Italian 🇮🇹</option>
+                            <option value="Russian">Russian 🇷🇺</option>
+                            <option value="Korean">Korean 🇰🇷</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-indigo-100 text-xs font-semibold mb-1" for="native-lang">모국어 (Native):</label>
+                        <select id="native-lang" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2.5 text-sm text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                            <option value="Korean" selected>Korean 🇰🇷</option>
+                            <option value="English">English 🇬🇧/🇺🇸</option>
+                            <option value="Spanish">Spanish 🇪🇸</option>
+                            <option value="Japanese">Japanese 🇯🇵</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-indigo-100 text-xs font-semibold mb-1" for="level-select">난이도 (Level):</label>
+                        <select id="level-select" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2 text-sm text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                            <option value="Beginner (A1-A2)">초급 (입문~기초)</option>
+                            <option value="Intermediate (B1-B2)" selected>중급 (일상~활용)</option>
+                            <option value="Advanced (C1)">고급 (심화 표현)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-indigo-100 text-xs font-semibold mb-1" for="topic-select">주제 (Topic):</label>
+                        <select id="topic-select" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2 text-sm text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                            <option value="Everyday Conversation" selected>일상 회화 🎲</option>
+                            <option value="Travel & Airport">여행 & 공항 ✈️</option>
+                            <option value="Food & Restaurant">음식 & 식당 🍽️</option>
+                            <option value="Business & Work">비즈니스 & 업무 💼</option>
+                            <option value="Shopping & Money">쇼핑 & 결제 🛍️</option>
+                            <option value="Emotions & Opinions">감정 & 의견 💬</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-indigo-100 text-xs font-semibold mb-1.5">학습 모드 (Mode):</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button type="button" id="btn-word" onclick="selectMode('word')" class="mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 text-sm font-semibold shadow hover:bg-indigo-400 transition-colors">
+                            단어 (Words)
+                        </button>
+                        <button type="button" id="btn-sentence" onclick="selectMode('sentence')" class="mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 text-sm font-semibold shadow hover:bg-white/70 transition-colors">
+                            문장 (Sentences)
                         </button>
                     </div>
                 </div>
 
-                <button onclick="startSession()" class="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-purple-300">
-                    Start Learning
-                </button>
+                <div class="pt-1 space-y-2">
+                    <button type="button" onclick="startSession()" class="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-purple-300">
+                        AI 학습 시작하기
+                    </button>
+                    <button type="button" onclick="startDemoSession()" class="w-full bg-white/15 hover:bg-white/25 text-indigo-100 font-medium py-2 px-4 rounded-xl text-xs transition-colors focus:outline-none">
+                        API 키 없이 샘플 카드로 미리 체험하기
+                    </button>
+                </div>
             </div>
 
             <!-- View 2: Loading State -->
             <div id="loading-view" class="hidden flex-col items-center justify-center py-12 space-y-4">
                 <div class="spinner"></div>
-                <p class="text-white font-medium animate-pulse" id="loading-text">Generating content...</p>
+                <p class="text-white font-medium animate-pulse text-sm" id="loading-text">AI가 새로운 학습 카드를 생성하고 있습니다...</p>
             </div>
 
             <!-- View 3: Flashcard & Controls -->
             <div id="learning-view" class="hidden flex-col items-center w-full">
-                
+
+                <!-- Session Status Bar -->
+                <div class="w-full flex items-center justify-between text-xs text-indigo-100 mb-2 px-1">
+                    <span id="session-progress-badge" class="bg-white/15 px-2.5 py-0.5 rounded-full font-medium">Card 1 / 1</span>
+                    <div class="flex items-center gap-2">
+                        <label for="speech-rate-select" class="text-[11px] text-indigo-200">음성 속도</label>
+                        <select id="speech-rate-select" class="bg-white/15 text-white text-[11px] rounded-lg px-1.5 py-0.5 border border-white/20 outline-none">
+                            <option value="0.7" class="text-gray-800">0.7x (느리게)</option>
+                            <option value="0.85" selected class="text-gray-800">0.85x (권장)</option>
+                            <option value="1.0" class="text-gray-800">1.0x (보통)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Flashcard -->
-                <div class="flip-card perspective-1000 w-full h-64 mb-6 cursor-pointer" onclick="toggleCard()">
+                <div class="flip-card perspective-1000 w-full h-64 mb-5 cursor-pointer relative" onclick="toggleCard()">
+                    <!-- Bookmark Star Button on Card -->
+                    <button type="button" id="card-bookmark-btn" onclick="toggleCurrentBookmark(event)" class="absolute top-3.5 right-3.5 z-20 p-2 rounded-full bg-gray-100/80 hover:bg-amber-100 text-gray-400 transition-colors focus:outline-none" title="단어장에 저장/해제">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                    </button>
+
                     <div class="flip-card-inner relative w-full h-full transform-style-3d shadow-xl rounded-2xl">
-                        
+
                         <!-- Front Face (Target Language) -->
                         <div class="absolute w-full h-full backface-hidden bg-white rounded-2xl flex flex-col items-center justify-center p-6 text-center border-b-4 border-indigo-200">
                             <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2" id="card-type-label">Word</span>
-                            <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 break-words w-full" id="target-text">...</h2>
-                            <p class="text-gray-400 text-sm mt-4 flex items-center gap-1">
+                            <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 break-words w-full px-2" id="target-text">...</h2>
+                            <p class="text-gray-400 text-xs sm:text-sm mt-4 flex items-center gap-1">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M15 10a5 5 0 11-10 0 5 5 0 0110 0zm-5 3a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
                                 </svg>
-                                Click to reveal
+                                클릭하여 뜻·발음 확인 (Space)
                             </p>
                         </div>
 
                         <!-- Back Face (Translation & Pronunciation) -->
                         <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-indigo-50 rounded-2xl flex flex-col items-center justify-center p-6 text-center border-b-4 border-indigo-300">
-                            <p class="text-indigo-600 font-medium text-lg italic mb-4" id="pronunciation-text">...</p>
-                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words w-full" id="translation-text">...</h3>
+                            <span class="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Pronunciation & Meaning</span>
+                            <p class="text-indigo-600 font-medium text-base sm:text-lg italic mb-3" id="pronunciation-text">...</p>
+                            <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words w-full px-2" id="translation-text">...</h3>
                         </div>
 
                     </div>
                 </div>
 
                 <!-- Controls -->
-                <div class="w-full flex justify-between items-center gap-2 mt-2">
-                    <button onclick="endSession()" class="px-3 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-medium transition-colors focus:outline-none text-sm whitespace-nowrap">
-                        종료
+                <div class="w-full flex justify-between items-center gap-2">
+                    <button type="button" onclick="endSession()" class="px-3 py-3 rounded-xl bg-white/20 hover:bg-white/30 text-white font-medium transition-colors focus:outline-none text-xs sm:text-sm whitespace-nowrap">
+                        설정
                     </button>
-                    <button onclick="playAudio(event)" id="listen-btn" class="flex-1 bg-indigo-500 text-white font-bold py-3 px-2 rounded-xl shadow-md hover:bg-indigo-400 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center gap-1">
+                    <button type="button" onclick="goPrevCard()" id="prev-btn" disabled class="px-3 py-3 rounded-xl bg-white/20 hover:bg-white/30 disabled:opacity-35 disabled:pointer-events-none text-white font-bold transition-colors focus:outline-none text-xs sm:text-sm" title="이전 카드">
+                        ←
+                    </button>
+                    <button type="button" onclick="playAudio(event)" id="listen-btn" class="flex-1 bg-indigo-500 text-white font-bold py-3 px-2 rounded-xl shadow-md hover:bg-indigo-400 transition-colors focus:outline-none focus:ring-4 focus:ring-indigo-300 flex items-center justify-center gap-1 text-sm">
                         🔊 듣기
                     </button>
-                    <button onclick="fetchNextItem()" id="next-btn" class="flex-1 bg-white text-indigo-600 font-bold py-3 px-2 rounded-xl shadow-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-4 focus:ring-white/50 flex items-center justify-center gap-1">
-                        다음 
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <button type="button" onclick="handleNextButton()" id="next-btn" class="flex-1 bg-white text-indigo-600 font-bold py-3 px-2 rounded-xl shadow-md hover:bg-gray-50 transition-colors focus:outline-none focus:ring-4 focus:ring-white/50 flex items-center justify-center gap-1 text-sm">
+                        다음
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
                     </button>
                 </div>
-                
+
                 <!-- Toggle Extra Info Button -->
-                <button id="toggle-extra-btn" onclick="toggleExtraInfo()" class="w-full mt-3 bg-white/30 hover:bg-white/40 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors border border-white/20 text-sm">
+                <button type="button" id="toggle-extra-btn" onclick="toggleExtraInfo()" class="w-full mt-3 bg-white/30 hover:bg-white/40 text-white font-semibold py-2.5 px-4 rounded-xl shadow-sm transition-colors border border-white/20 text-sm">
                     예문 보기 👀
                 </button>
 
@@ -190,8 +286,23 @@
                 </div>
 
                 <!-- Error Message Container -->
-                <div id="error-msg" class="w-full mt-4 bg-red-500/80 border border-red-300 text-white text-xs p-3 rounded-lg hidden text-center leading-relaxed">
+                <div id="error-msg" class="w-full mt-4 bg-red-500/85 border border-red-300 text-white text-xs p-3.5 rounded-xl hidden text-center leading-relaxed">
                     오류 발생
+                </div>
+            </div>
+
+            <!-- Bookmarks Modal Overlay -->
+            <div id="bookmarks-modal" class="hidden absolute inset-0 z-30 bg-indigo-950/95 backdrop-blur-md p-5 flex-col">
+                <div class="flex items-center justify-between pb-3 border-b border-white/15">
+                    <h2 class="text-white font-bold text-base flex items-center gap-1.5">
+                        ⭐ 내 단어장 <span id="modal-bookmark-count" class="text-xs font-normal text-indigo-200">(0)</span>
+                    </h2>
+                    <button type="button" onclick="toggleBookmarksModal(false)" class="text-indigo-200 hover:text-white text-sm font-semibold px-2 py-1 rounded-lg bg-white/10">
+                        닫기 ✕
+                    </button>
+                </div>
+                <div id="bookmarks-list" class="flex-1 overflow-y-auto py-3 space-y-2.5">
+                    <!-- Populated via JS -->
                 </div>
             </div>
 
@@ -203,9 +314,21 @@
         let currentMode = 'word';
         let isCardFlipped = false;
         let currentTargetText = '';
-        let currentTargetLang = '';
+        let currentTargetLang = 'Spanish';
         let currentExtraData = null;
-        
+        let isDemoMode = false;
+
+        // Session History & Bookmarks
+        let cardHistory = [];
+        let historyIndex = -1;
+        let bookmarks = [];
+
+        const FALLBACK_MODELS = [
+            'gemini-2.5-flash-lite',
+            'gemini-3.5-flash-lite',
+            'gemini-2.5-flash'
+        ];
+
         const langCodes = {
             'Spanish': 'es-ES',
             'French': 'fr-FR',
@@ -217,7 +340,92 @@
             'Russian': 'ru-RU',
             'English': 'en-US'
         };
-        
+
+        const DEMO_CARDS = {
+            word: [
+                {
+                    targetLang: 'Spanish',
+                    mode: 'word',
+                    targetText: 'Imprescindible',
+                    pronunciation: '임프레스신디블레 (im-pres-seen-DEE-bleh)',
+                    translation: '필수적인, 꼭 필요한',
+                    example: {
+                        text: 'El pasaporte es imprescindible para viajar al extranjero.',
+                        pronunciation: '엘 파사포르테 에스 임프레스신디블레 파라 비아하르 알 엑스트란헤로',
+                        translation: '해외여행을 하려면 여권은 필수입니다.'
+                    }
+                },
+                {
+                    targetLang: 'Japanese',
+                    mode: 'word',
+                    targetText: '木漏れ日',
+                    pronunciation: '코모레비 (ko-mo-re-bi)',
+                    translation: '나뭇잎 사이로 비치는 햇살',
+                    example: {
+                        text: '森の中を歩くと、美しい木漏れ日が見えた。',
+                        pronunciation: '모리노 나카오 아루쿠토, 우츠쿠시이 코모레비가 미에타',
+                        translation: '숲속을 걸으니 아름다운 나뭇잎 햇살이 보였다.'
+                    }
+                },
+                {
+                    targetLang: 'English',
+                    mode: 'word',
+                    targetText: 'Serendipity',
+                    pronunciation: '세렌디피티 (ser-uhn-DIP-i-tee)',
+                    translation: '뜻밖의 행운, 우연한 발견',
+                    example: {
+                        text: 'Finding that cozy cafe in the alley was pure serendipity.',
+                        pronunciation: '파인딩 댓 코지 카페 인 더 앨리 워즈 퓨어 세렌디피티',
+                        translation: '골목에서 그 아늑한 카페를 찾은 건 순전한 행운이었다.'
+                    }
+                }
+            ],
+            sentence: [
+                {
+                    targetLang: 'Spanish',
+                    mode: 'sentence',
+                    targetText: '¿Me podrías recomendar un plato típico de aquí?',
+                    pronunciation: '메 포드리아스 레코멘다르 운 플라토 티피코 데 아키?',
+                    translation: '이곳의 대표적인 전통 요리 하나를 추천해 주시겠어요?',
+                    vocabulary: [
+                        { word: 'recomendar', pronunciation: '레코멘다르', translation: '추천하다' },
+                        { word: 'plato típico', pronunciation: '플라토 티피코', translation: '전통 요리, 대표 음식' },
+                        { word: 'de aquí', pronunciation: '데 아키', translation: '이곳의, 여기의' }
+                    ]
+                },
+                {
+                    targetLang: 'Japanese',
+                    mode: 'sentence',
+                    targetText: 'お会計は別々でお願いできますか？',
+                    pronunciation: '오카이케이와 베츠베츠데 오네가이 데키마스카?',
+                    translation: '계산은 따로따로 부탁드려도 될까요?',
+                    vocabulary: [
+                        { word: 'お会計 (おかいけい)', pronunciation: '오카이케이', translation: '계산, 회계' },
+                        { word: '別々 (べつべつ)', pronunciation: '베츠베츠', translation: '각각, 따로따로' },
+                        { word: 'お願い (おねがい)', pronunciation: '오네가이', translation: '부탁' }
+                    ]
+                }
+            ]
+        };
+
+        // --- Safe Storage Helper ---
+        function safeGetStorage(key, fallback = null) {
+            try {
+                const val = localStorage.getItem(key);
+                return val !== null ? val : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function safeSetStorage(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                // Ignore sandbox storage error
+            }
+        }
+
         // --- DOM Elements ---
         const setupView = document.getElementById('setup-view');
         const loadingView = document.getElementById('loading-view');
@@ -229,26 +437,89 @@
         const cardTypeLabel = document.getElementById('card-type-label');
         const errorMsgEl = document.getElementById('error-msg');
         const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
         const apiKeyInput = document.getElementById('api-key-input');
+        const modelSelect = document.getElementById('model-select');
 
-        // 페이지 로드 시 저장된 키 불러오기
+        // --- Toast Notification ---
+        let toastTimer = null;
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const textEl = document.getElementById('toast-text');
+            textEl.textContent = message;
+            container.classList.remove('opacity-0', '-translate-y-2');
+            container.classList.add('opacity-100', 'translate-y-0');
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                container.classList.add('opacity-0', '-translate-y-2');
+                container.classList.remove('opacity-100', 'translate-y-0');
+            }, 2600);
+        }
+
+        // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
-            const savedKey = localStorage.getItem('my_gemini_key');
+            const savedKey = safeGetStorage('my_gemini_key', '');
             if (savedKey) {
                 apiKeyInput.value = savedKey;
             }
+            const savedModel = safeGetStorage('my_gemini_model', 'gemini-2.5-flash-lite');
+            if (savedModel && Array.from(modelSelect.options).some(o => o.value === savedModel)) {
+                modelSelect.value = savedModel;
+            }
+            const savedBookmarks = safeGetStorage('lingoflash_bookmarks', '[]');
+            try {
+                bookmarks = JSON.parse(savedBookmarks) || [];
+            } catch (e) {
+                bookmarks = [];
+            }
+            updateBookmarkBadge();
+
+            // Event delegation for extra-info audio buttons (prevents quote escaping bugs)
+            document.getElementById('extra-info-container').addEventListener('click', (e) => {
+                const audioBtn = e.target.closest('[data-tts-text]');
+                if (audioBtn) {
+                    const text = audioBtn.getAttribute('data-tts-text');
+                    playAudio(e, text);
+                }
+            });
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (learningView.classList.contains('hidden')) return;
+                if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    toggleCard();
+                } else if (e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    if (!nextBtn.disabled) handleNextButton();
+                } else if (e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (!prevBtn.disabled) goPrevCard();
+                } else if (e.key === 's' || e.key === 'S') {
+                    e.preventDefault();
+                    playAudio(null);
+                }
+            });
         });
+
+        function toggleKeyVisibility() {
+            const isPwd = apiKeyInput.type === 'password';
+            apiKeyInput.type = isPwd ? 'text' : 'password';
+            document.getElementById('toggle-key-btn').textContent = isPwd ? '🙈' : '👁️';
+        }
 
         function selectMode(mode) {
             currentMode = mode;
             const btnWord = document.getElementById('btn-word');
             const btnSentence = document.getElementById('btn-sentence');
 
-            btnWord.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors";
-            btnSentence.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors";
+            btnWord.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 text-sm font-semibold shadow hover:bg-white/70 transition-colors";
+            btnSentence.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 text-sm font-semibold shadow hover:bg-white/70 transition-colors";
 
             const activeBtn = document.getElementById(`btn-${mode}`);
-            activeBtn.className = "mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 font-semibold shadow hover:bg-indigo-400 transition-colors";
+            activeBtn.className = "mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 text-sm font-semibold shadow hover:bg-indigo-400 transition-colors";
         }
 
         function toggleCard() {
@@ -268,56 +539,156 @@
         function showView(viewId) {
             setupView.classList.add('hidden');
             loadingView.classList.add('hidden');
+            loadingView.classList.remove('flex');
             learningView.classList.add('hidden');
-            document.getElementById(viewId).classList.remove('hidden');
-            
-            if(viewId === 'loading-view' || viewId === 'learning-view') {
-                document.getElementById(viewId).classList.add('flex');
+            learningView.classList.remove('flex');
+
+            const target = document.getElementById(viewId);
+            target.classList.remove('hidden');
+
+            if (viewId === 'loading-view' || viewId === 'learning-view') {
+                target.classList.add('flex');
             }
         }
 
         function startSession() {
             const key = apiKeyInput.value.trim();
             if (!key) {
-                alert("Gemini API 키를 먼저 입력해주세요!");
+                showToast("⚠️ Gemini API 키를 먼저 입력해주세요!");
+                apiKeyInput.focus();
                 return;
             }
-            localStorage.setItem('my_gemini_key', key);
+            isDemoMode = false;
+            safeSetStorage('my_gemini_key', key);
+            safeSetStorage('my_gemini_model', modelSelect.value);
+            cardHistory = [];
+            historyIndex = -1;
             showView('loading-view');
             fetchNextItem();
         }
 
+        function startDemoSession() {
+            isDemoMode = true;
+            cardHistory = [];
+            historyIndex = -1;
+            showToast("✨ 샘플 체험 모드로 시작합니다.");
+            fetchNextItem();
+        }
+
         function endSession() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
             showView('setup-view');
             resetCard();
             document.getElementById('extra-info-container').classList.add('hidden');
             errorMsgEl.classList.add('hidden');
         }
 
+        function goPrevCard() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                resetCard();
+                document.getElementById('extra-info-container').classList.add('hidden');
+                errorMsgEl.classList.add('hidden');
+                updateCardUI(cardHistory[historyIndex]);
+            }
+        }
+
+        function handleNextButton() {
+            if (historyIndex < cardHistory.length - 1) {
+                historyIndex++;
+                resetCard();
+                document.getElementById('extra-info-container').classList.add('hidden');
+                errorMsgEl.classList.add('hidden');
+                updateCardUI(cardHistory[historyIndex]);
+            } else {
+                fetchNextItem();
+            }
+        }
+
+        async function callGeminiWithFallback(apiKey, preferredModel, payload) {
+            const modelsToTry = [
+                preferredModel,
+                ...FALLBACK_MODELS.filter(m => m !== preferredModel)
+            ];
+
+            let lastError = null;
+
+            for (const modelName of modelsToTry) {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    if (modelName !== preferredModel) {
+                        modelSelect.value = modelName;
+                        safeSetStorage('my_gemini_model', modelName);
+                        showToast(`💡 지원 모델(${modelName})로 자동 전환되었습니다.`);
+                    }
+                    return await response.json();
+                }
+
+                const errData = await response.json().catch(() => ({}));
+                const msg = errData.error?.message || `통신 실패 (코드: ${response.status})`;
+                lastError = new Error(msg);
+
+                // Only try fallback model on 404 (model not found/deprecated)
+                if (response.status !== 404) {
+                    break;
+                }
+            }
+
+            throw lastError || new Error("API 요청에 실패했습니다.");
+        }
+
         async function fetchNextItem() {
-            if(learningView.classList.contains('hidden')) {
+            if (learningView.classList.contains('hidden')) {
                 showView('loading-view');
             } else {
                 nextBtn.disabled = true;
-                nextBtn.innerHTML = `<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>`;
+                nextBtn.innerHTML = `<div class="spinner-sm"></div>`;
             }
             errorMsgEl.classList.add('hidden');
             document.getElementById('extra-info-container').classList.add('hidden');
             resetCard();
 
+            // Demo Mode Handling
+            if (isDemoMode) {
+                const pool = DEMO_CARDS[currentMode] || DEMO_CARDS.word;
+                const sample = pool[cardHistory.length % pool.length];
+                cardHistory.push(sample);
+                historyIndex = cardHistory.length - 1;
+                updateCardUI(sample);
+                showView('learning-view');
+                restoreNextButton();
+                return;
+            }
+
             const targetLang = document.getElementById('target-lang').value;
             const nativeLang = document.getElementById('native-lang').value;
+            const level = document.getElementById('level-select').value;
+            const topic = document.getElementById('topic-select').value;
             const apiKey = apiKeyInput.value.trim();
-            
-            const seed = Math.floor(Math.random() * 10000);
-            const prompt = `Act as a professional language teacher. Generate a completely random, commonly used ${currentMode} in ${targetLang}. 
-                            It should be suitable for a beginner to intermediate learner whose native language is ${nativeLang}.
-                            Randomness seed: ${seed}. Do not repeat standard introductory words.
-                            If generating a 'word', you MUST include an 'example' sentence using that word.
-                            If generating a 'sentence', you MUST include a 'vocabulary' array containing key words used in the sentence.
-                            Provide the text in the target language, its pronunciation guide (using romanization or IPA depending on what's easiest for a ${nativeLang} speaker), and its direct translation in ${nativeLang}.`;
+            const selectedModel = modelSelect.value || 'gemini-2.5-flash-lite';
 
-            let responseSchema = {
+            const recentItems = cardHistory.slice(-15).map(item => item.targetText).join(', ');
+            const exclusionNote = recentItems
+                ? `Do NOT repeat any of these already studied items: [${recentItems}].`
+                : 'Do not use overly cliché first-day greetings like Hola or Bonjour.';
+
+            const seed = Math.floor(Math.random() * 100000);
+            const prompt = `Act as a professional language teacher. Generate a fresh, natural, commonly used ${currentMode} in ${targetLang} related to the topic "${topic}".
+Difficulty level: ${level} for a learner whose native language is ${nativeLang}.
+Randomness seed: ${seed}. ${exclusionNote}
+If generating a 'word', you MUST include an 'example' sentence using that word.
+If generating a 'sentence', you MUST include a 'vocabulary' array containing 2 to 4 key words used in the sentence.
+Provide the text in ${targetLang}, a friendly pronunciation guide easy for a ${nativeLang} speaker to read (e.g., native script reading + romanization), and an accurate translation in ${nativeLang}.`;
+
+            const responseSchema = {
                 type: "OBJECT",
                 properties: {
                     "targetText": { "type": "STRING" },
@@ -334,8 +705,10 @@
                         "text": { "type": "STRING" },
                         "pronunciation": { "type": "STRING" },
                         "translation": { "type": "STRING" }
-                    }
+                    },
+                    required: ["text", "pronunciation", "translation"]
                 };
+                responseSchema.required.push("example");
             } else {
                 responseSchema.properties.vocabulary = {
                     type: "ARRAY",
@@ -345,40 +718,34 @@
                             "word": { "type": "STRING" },
                             "pronunciation": { "type": "STRING" },
                             "translation": { "type": "STRING" }
-                        }
+                        },
+                        required: ["word", "pronunciation", "translation"]
                     }
                 };
+                responseSchema.required.push("vocabulary");
             }
 
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
-                    responseSchema: responseSchema
+                    responseSchema: responseSchema,
+                    temperature: 0.9
                 }
             };
 
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
             try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                const result = await callGeminiWithFallback(apiKey, selectedModel, payload);
 
-                if (!response.ok) {
-                    const errData = await response.json().catch(() => ({}));
-                    const msg = errData.error?.message || `통신 실패 (코드: ${response.status})`;
-                    throw new Error(msg);
-                }
-
-                const result = await response.json();
-                
                 if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const parsedData = JSON.parse(jsonText);
-                    
+                    parsedData.targetLang = targetLang;
+                    parsedData.mode = currentMode;
+
+                    cardHistory.push(parsedData);
+                    historyIndex = cardHistory.length - 1;
+
                     updateCardUI(parsedData);
                     showView('learning-view');
                 } else {
@@ -389,75 +756,92 @@
                 console.error("Error fetching data:", error);
                 showView('learning-view');
                 errorMsgEl.classList.remove('hidden');
-                errorMsgEl.innerText = `⚠️ 오류: ${error.message}\n(API 키를 다시 확인하거나 구글 AI Studio에서 새로 생성해 보세요)`;
+                errorMsgEl.innerText = `⚠️ 오류: ${error.message}\n(API 키 또는 선택한 모델을 확인하거나 샘플 체험 모드를 이용해 보세요)`;
             } finally {
-                nextBtn.disabled = false;
-                nextBtn.innerHTML = `다음 
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>`;
+                restoreNextButton();
             }
         }
 
+        function restoreNextButton() {
+            nextBtn.disabled = false;
+            nextBtn.innerHTML = `다음
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>`;
+        }
+
         function updateCardUI(data) {
-            const targetLang = document.getElementById('target-lang').value;
-            
+            const targetLang = data.targetLang || document.getElementById('target-lang').value;
+            const mode = data.mode || currentMode;
+
             currentTargetText = data.targetText;
             currentTargetLang = targetLang;
             currentExtraData = data;
-            
+
             const extraBtn = document.getElementById('toggle-extra-btn');
-            extraBtn.innerText = currentMode === 'word' ? '예문 보기 👀' : '단어장 보기 📝';
-            
-            if(data.targetText.length > 30) {
-                targetTextEl.classList.remove('text-4xl');
-                targetTextEl.classList.add('text-2xl');
+            extraBtn.innerText = mode === 'word' ? '예문 보기 👀' : '단어장 보기 📝';
+
+            if (data.targetText.length > 28) {
+                targetTextEl.classList.remove('text-3xl', 'sm:text-4xl');
+                targetTextEl.classList.add('text-xl', 'sm:text-2xl');
             } else {
-                targetTextEl.classList.add('text-4xl');
-                targetTextEl.classList.remove('text-2xl');
+                targetTextEl.classList.add('text-3xl', 'sm:text-4xl');
+                targetTextEl.classList.remove('text-xl', 'sm:text-2xl');
             }
 
-            cardTypeLabel.innerText = `${targetLang} ${currentMode.charAt(0).toUpperCase() + currentMode.slice(1)}`;
+            cardTypeLabel.innerText = `${targetLang} ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
             targetTextEl.innerText = data.targetText;
             pronunciationTextEl.innerText = data.pronunciation ? `[ ${data.pronunciation} ]` : '';
             translationTextEl.innerText = data.translation;
+
+            // Update History Controls
+            prevBtn.disabled = historyIndex <= 0;
+            const progressBadge = document.getElementById('session-progress-badge');
+            progressBadge.textContent = `${isDemoMode ? '샘플 ' : ''}Card ${historyIndex + 1} / ${cardHistory.length}`;
+
+            updateCardBookmarkIcon();
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function toggleExtraInfo() {
             const container = document.getElementById('extra-info-container');
             const btn = document.getElementById('toggle-extra-btn');
             const isHidden = container.classList.contains('hidden');
+            const mode = currentExtraData?.mode || currentMode;
 
             if (isHidden) {
                 let htmlContent = '';
-                
-                if (currentMode === 'word' && currentExtraData.example) {
+
+                if (mode === 'word' && currentExtraData?.example) {
                     const ex = currentExtraData.example;
-                    const safeText = ex.text.replace(/'/g, "\\'");
-                    
                     htmlContent = `
                         <div class="border-l-4 border-indigo-400 pl-3 py-1">
-                            <p class="text-gray-900 font-bold text-base mb-1">${ex.text}</p>
-                            <p class="text-indigo-600 text-xs mb-1">[ ${ex.pronunciation} ]</p>
-                            <p class="text-gray-600 text-sm mb-3">${ex.translation}</p>
-                            <button onclick="playAudio(event, '${safeText}')" class="bg-indigo-100 text-indigo-700 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 w-fit focus:outline-none">
+                            <p class="text-gray-900 font-bold text-base mb-1">${escapeHtml(ex.text)}</p>
+                            <p class="text-indigo-600 text-xs mb-1">[ ${escapeHtml(ex.pronunciation)} ]</p>
+                            <p class="text-gray-600 text-sm mb-3">${escapeHtml(ex.translation)}</p>
+                            <button type="button" data-tts-text="${escapeHtml(ex.text)}" class="bg-indigo-100 text-indigo-700 text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-indigo-200 transition-colors flex items-center gap-1 w-fit focus:outline-none">
                                 🔊 문장 듣기
                             </button>
                         </div>
                     `;
-                } 
-                else if (currentMode === 'sentence' && currentExtraData.vocabulary && currentExtraData.vocabulary.length > 0) {
+                } else if (mode === 'sentence' && Array.isArray(currentExtraData?.vocabulary) && currentExtraData.vocabulary.length > 0) {
                     currentExtraData.vocabulary.forEach(v => {
-                        const safeText = v.word.replace(/'/g, "\\'");
-                        
                         htmlContent += `
                             <div class="border-b border-gray-200 last:border-0 pb-3 mb-3 last:pb-0 last:mb-0 flex justify-between items-start gap-2">
                                 <div class="flex-1">
-                                    <p class="text-gray-900 font-bold text-base">${v.word}</p>
-                                    <p class="text-indigo-500 text-xs mt-0.5">[ ${v.pronunciation} ]</p>
-                                    <p class="text-gray-600 text-sm mt-1">${v.translation}</p>
+                                    <p class="text-gray-900 font-bold text-base">${escapeHtml(v.word)}</p>
+                                    <p class="text-indigo-500 text-xs mt-0.5">[ ${escapeHtml(v.pronunciation)} ]</p>
+                                    <p class="text-gray-600 text-sm mt-1">${escapeHtml(v.translation)}</p>
                                 </div>
-                                <button onclick="playAudio(event, '${safeText}')" class="bg-indigo-50 text-indigo-600 p-2.5 rounded-full shadow-sm hover:bg-indigo-100 transition-colors focus:outline-none flex-shrink-0">
+                                <button type="button" data-tts-text="${escapeHtml(v.word)}" class="bg-indigo-50 text-indigo-600 p-2.5 rounded-full shadow-sm hover:bg-indigo-100 transition-colors focus:outline-none flex-shrink-0">
                                     🔊
                                 </button>
                             </div>
@@ -466,27 +850,151 @@
                 } else {
                     htmlContent = '<p class="text-gray-500 text-sm text-center">추가 정보가 없습니다.</p>';
                 }
-                
+
                 container.innerHTML = htmlContent;
                 container.classList.remove('hidden');
                 btn.innerText = '닫기 ⬆️';
             } else {
                 container.classList.add('hidden');
-                btn.innerText = currentMode === 'word' ? '예문 보기 👀' : '단어장 보기 📝';
+                btn.innerText = mode === 'word' ? '예문 보기 👀' : '단어장 보기 📝';
             }
         }
 
-        function playAudio(event, textToPlay = currentTargetText) {
-            if (event) event.stopPropagation(); 
+        function playAudio(event, textToPlay = currentTargetText, langOverride = null) {
+            if (event) event.stopPropagation();
             if (!textToPlay) return;
+            if (!('speechSynthesis' in window)) {
+                showToast("⚠️ 현재 브라우저에서 음성 합성을 지원하지 않습니다.");
+                return;
+            }
 
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(textToPlay);
-            utterance.lang = langCodes[currentTargetLang] || 'en-US';
-            utterance.rate = 0.85; 
-            
+            const targetLang = langOverride || currentTargetLang;
+            utterance.lang = langCodes[targetLang] || 'en-US';
+            const rateSelect = document.getElementById('speech-rate-select');
+            utterance.rate = parseFloat(rateSelect?.value || '0.85');
+
             window.speechSynthesis.speak(utterance);
+        }
+
+        // --- Bookmarks (My Vocabulary) ---
+        function isBookmarked(targetText) {
+            return bookmarks.some(b => b.targetText === targetText);
+        }
+
+        function toggleCurrentBookmark(event) {
+            if (event) event.stopPropagation();
+            if (!currentExtraData || !currentExtraData.targetText) return;
+
+            const idx = bookmarks.findIndex(b => b.targetText === currentExtraData.targetText);
+            if (idx >= 0) {
+                bookmarks.splice(idx, 1);
+                showToast("단어장에서 제거되었습니다.");
+            } else {
+                bookmarks.unshift({
+                    ...currentExtraData,
+                    savedAt: new Date().toISOString()
+                });
+                showToast("⭐ 내 단어장에 저장되었습니다!");
+            }
+
+            safeSetStorage('lingoflash_bookmarks', JSON.stringify(bookmarks));
+            updateCardBookmarkIcon();
+            updateBookmarkBadge();
+        }
+
+        function updateCardBookmarkIcon() {
+            const btn = document.getElementById('card-bookmark-btn');
+            if (!btn) return;
+            if (currentExtraData && isBookmarked(currentExtraData.targetText)) {
+                btn.className = "absolute top-3.5 right-3.5 z-20 p-2 rounded-full bg-amber-100 text-amber-500 shadow-sm transition-colors focus:outline-none";
+            } else {
+                btn.className = "absolute top-3.5 right-3.5 z-20 p-2 rounded-full bg-gray-100/80 hover:bg-amber-100 text-gray-400 transition-colors focus:outline-none";
+            }
+        }
+
+        function updateBookmarkBadge() {
+            const badge = document.getElementById('bookmark-count-badge');
+            const modalCount = document.getElementById('modal-bookmark-count');
+            if (modalCount) modalCount.textContent = `(${bookmarks.length})`;
+            if (bookmarks.length > 0) {
+                badge.textContent = bookmarks.length > 99 ? '99+' : String(bookmarks.length);
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+            }
+        }
+
+        function toggleBookmarksModal(show) {
+            const modal = document.getElementById('bookmarks-modal');
+            if (show) {
+                renderBookmarksList();
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function removeBookmarkByIndex(index) {
+            bookmarks.splice(index, 1);
+            safeSetStorage('lingoflash_bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkBadge();
+            updateCardBookmarkIcon();
+            renderBookmarksList();
+        }
+
+        function loadBookmarkIntoCard(index) {
+            const item = bookmarks[index];
+            if (!item) return;
+            toggleBookmarksModal(false);
+            cardHistory.push(item);
+            historyIndex = cardHistory.length - 1;
+            resetCard();
+            document.getElementById('extra-info-container').classList.add('hidden');
+            errorMsgEl.classList.add('hidden');
+            updateCardUI(item);
+            showView('learning-view');
+        }
+
+        function renderBookmarksList() {
+            const listEl = document.getElementById('bookmarks-list');
+            updateBookmarkBadge();
+
+            if (bookmarks.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-14 text-indigo-200 text-xs space-y-2">
+                        <p class="text-2xl">📭</p>
+                        <p>아직 저장된 단어/문장이 없습니다.</p>
+                        <p class="text-indigo-300/80">학습 카드 우측 상단의 ⭐ 버튼을 눌러 저장해보세요!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = bookmarks.map((item, idx) => `
+                <div class="bg-white/10 border border-white/15 rounded-2xl p-3.5 flex items-start justify-between gap-2">
+                    <div class="flex-1 cursor-pointer" onclick="loadBookmarkIntoCard(${idx})">
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-indigo-300">${escapeHtml(item.targetLang || '')} · ${escapeHtml(item.mode || 'word')}</span>
+                        <p class="text-white font-bold text-sm mt-0.5">${escapeHtml(item.targetText)}</p>
+                        <p class="text-indigo-200 text-xs mt-0.5">[ ${escapeHtml(item.pronunciation)} ]</p>
+                        <p class="text-gray-200 text-xs mt-1">${escapeHtml(item.translation)}</p>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                        <button type="button" onclick="playAudio(event, '${escapeHtml(item.targetText).replace(/&#39;/g, "\\'")}', '${escapeHtml(item.targetLang || 'Spanish')}')" class="p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs" title="발음 듣기">
+                            🔊
+                        </button>
+                        <button type="button" onclick="removeBookmarkByIndex(${idx})" class="p-2 rounded-xl bg-red-500/20 hover:bg-red-500/40 text-red-200 text-xs" title="삭제">
+                            🗑️
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
         showView('setup-view');
