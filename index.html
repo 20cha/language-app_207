@@ -70,21 +70,28 @@
         <div class="bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-3xl w-full max-w-md p-6 relative overflow-hidden">
             
             <!-- Header -->
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
                 <h1 class="text-3xl font-bold text-white tracking-tight flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                     </svg>
                     LingoFlash
                 </h1>
-                <p class="text-indigo-100 text-sm mt-2">Learn new words & sentences daily</p>
+                <p class="text-indigo-100 text-sm mt-1">Learn new words & sentences daily</p>
             </div>
 
             <!-- View 1: Setup Configuration -->
-            <div id="setup-view" class="space-y-5 transition-opacity duration-300">
+            <div id="setup-view" class="space-y-4 transition-opacity duration-300">
+                <!-- API Key Input Section -->
+                <div class="bg-white/15 p-3.5 rounded-2xl border border-white/20">
+                    <label class="block text-indigo-100 text-xs font-semibold mb-1.5" for="api-key-input">🔑 Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="키(AIzaSy... 또는 AQ...)를 입력하세요" class="w-full bg-white/90 border-0 rounded-xl px-3 py-2 text-sm text-gray-800 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all placeholder:text-gray-400" />
+                    <p class="text-[11px] text-indigo-200 mt-1">* 입력한 키는 깃허브가 아닌 현재 기기에만 안전하게 저장됩니다.</p>
+                </div>
+
                 <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-2" for="target-lang">I want to learn:</label>
-                    <select id="target-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-3 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5" for="target-lang">I want to learn:</label>
+                    <select id="target-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-2.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                         <option value="Spanish">Spanish 🇪🇸</option>
                         <option value="French">French 🇫🇷</option>
                         <option value="German">German 🇩🇪</option>
@@ -97,27 +104,27 @@
                 </div>
 
                 <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-2" for="native-lang">My native language is:</label>
-                    <select id="native-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-3 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
+                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5" for="native-lang">My native language is:</label>
+                    <select id="native-lang" class="w-full bg-white/90 border-0 rounded-xl px-4 py-2.5 text-gray-700 shadow-sm focus:ring-2 focus:ring-indigo-400 outline-none transition-all">
                         <option value="English">English 🇬🇧/🇺🇸</option>
-                        <option value="Korean">Korean 🇰🇷</option>
+                        <option value="Korean" selected>Korean 🇰🇷</option>
                         <option value="Spanish">Spanish 🇪🇸</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-indigo-100 text-sm font-semibold mb-2">I want to practice:</label>
+                    <label class="block text-indigo-100 text-sm font-semibold mb-1.5">I want to practice:</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <button type="button" id="btn-word" onclick="selectMode('word')" class="mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-3 font-semibold shadow hover:bg-indigo-400 transition-colors">
+                        <button type="button" id="btn-word" onclick="selectMode('word')" class="mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 font-semibold shadow hover:bg-indigo-400 transition-colors">
                             Words
                         </button>
-                        <button type="button" id="btn-sentence" onclick="selectMode('sentence')" class="mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-3 font-semibold shadow hover:bg-white/70 transition-colors">
+                        <button type="button" id="btn-sentence" onclick="selectMode('sentence')" class="mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors">
                             Sentences
                         </button>
                     </div>
                 </div>
 
-                <button onclick="startSession()" class="w-full mt-6 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold py-4 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-purple-300">
+                <button onclick="startSession()" class="w-full mt-4 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 hover:to-indigo-400 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1 active:translate-y-0 focus:outline-none focus:ring-4 focus:ring-purple-300">
                     Start Learning
                 </button>
             </div>
@@ -183,8 +190,8 @@
                 </div>
 
                 <!-- Error Message Container -->
-                <div id="error-msg" class="w-full mt-4 bg-red-500/20 border border-red-500/50 text-white text-sm p-3 rounded-lg hidden text-center">
-                    Oops! Something went wrong. Let's try again.
+                <div id="error-msg" class="w-full mt-4 bg-red-500/80 border border-red-300 text-white text-xs p-3 rounded-lg hidden text-center leading-relaxed">
+                    오류 발생
                 </div>
             </div>
 
@@ -193,13 +200,12 @@
 
     <script>
         // --- State ---
-        let currentMode = 'word'; // 'word' or 'sentence'
+        let currentMode = 'word';
         let isCardFlipped = false;
         let currentTargetText = '';
         let currentTargetLang = '';
-        let currentExtraData = null; // 저장용 추가 데이터(예문/단어장)
+        let currentExtraData = null;
         
-        // 언어별 음성 코드를 매핑합니다.
         const langCodes = {
             'Spanish': 'es-ES',
             'French': 'fr-FR',
@@ -223,21 +229,26 @@
         const cardTypeLabel = document.getElementById('card-type-label');
         const errorMsgEl = document.getElementById('error-msg');
         const nextBtn = document.getElementById('next-btn');
+        const apiKeyInput = document.getElementById('api-key-input');
 
-        // --- UI Interactions ---
+        // 페이지 로드 시 저장된 키 불러오기
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedKey = localStorage.getItem('my_gemini_key');
+            if (savedKey) {
+                apiKeyInput.value = savedKey;
+            }
+        });
 
         function selectMode(mode) {
             currentMode = mode;
             const btnWord = document.getElementById('btn-word');
             const btnSentence = document.getElementById('btn-sentence');
 
-            // Reset styles
-            btnWord.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-3 font-semibold shadow hover:bg-white/70 transition-colors";
-            btnSentence.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-3 font-semibold shadow hover:bg-white/70 transition-colors";
+            btnWord.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors";
+            btnSentence.className = "mode-btn bg-white/50 text-indigo-900 border-2 border-transparent rounded-xl py-2.5 font-semibold shadow hover:bg-white/70 transition-colors";
 
-            // Apply active styles
             const activeBtn = document.getElementById(`btn-${mode}`);
-            activeBtn.className = "mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-3 font-semibold shadow hover:bg-indigo-400 transition-colors";
+            activeBtn.className = "mode-btn bg-indigo-500 text-white border-2 border-indigo-400 rounded-xl py-2.5 font-semibold shadow hover:bg-indigo-400 transition-colors";
         }
 
         function toggleCard() {
@@ -260,15 +271,18 @@
             learningView.classList.add('hidden');
             document.getElementById(viewId).classList.remove('hidden');
             
-            // Flex handling for hidden utility
             if(viewId === 'loading-view' || viewId === 'learning-view') {
                 document.getElementById(viewId).classList.add('flex');
             }
         }
 
-        // --- Main Logic ---
-
         function startSession() {
+            const key = apiKeyInput.value.trim();
+            if (!key) {
+                alert("Gemini API 키를 먼저 입력해주세요!");
+                return;
+            }
+            localStorage.setItem('my_gemini_key', key);
             showView('loading-view');
             fetchNextItem();
         }
@@ -280,13 +294,10 @@
             errorMsgEl.classList.add('hidden');
         }
 
-        // API Call to Gemini
-        async function fetchNextItem(retryCount = 0) {
-            // UI Updates
+        async function fetchNextItem() {
             if(learningView.classList.contains('hidden')) {
                 showView('loading-view');
             } else {
-                // If already in learning view, just show loading state on the button
                 nextBtn.disabled = true;
                 nextBtn.innerHTML = `<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div>`;
             }
@@ -296,10 +307,9 @@
 
             const targetLang = document.getElementById('target-lang').value;
             const nativeLang = document.getElementById('native-lang').value;
+            const apiKey = apiKeyInput.value.trim();
             
-            // A bit of randomness seed so we don't get the exact same word if cached by model
             const seed = Math.floor(Math.random() * 10000);
-
             const prompt = `Act as a professional language teacher. Generate a completely random, commonly used ${currentMode} in ${targetLang}. 
                             It should be suitable for a beginner to intermediate learner whose native language is ${nativeLang}.
                             Randomness seed: ${seed}. Do not repeat standard introductory words.
@@ -307,7 +317,6 @@
                             If generating a 'sentence', you MUST include a 'vocabulary' array containing key words used in the sentence.
                             Provide the text in the target language, its pronunciation guide (using romanization or IPA depending on what's easiest for a ${nativeLang} speaker), and its direct translation in ${nativeLang}.`;
 
-            // 모드(Word/Sentence)에 따라 동적으로 JSON Schema 구성
             let responseSchema = {
                 type: "OBJECT",
                 properties: {
@@ -342,31 +351,13 @@
             }
 
             const payload = {
-                contents: [{
-                    parts: [{ text: prompt }]
-                }],
+                contents: [{ parts: [{ text: prompt }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: responseSchema
                 }
             };
 
-            // 기기(localStorage)에 저장된 API 키 불러오기
-            let apiKey = localStorage.getItem('my_gemini_key');
-            if (!apiKey) {
-                apiKey = prompt("나만의 단어장에 오신 것을 환영합니다!\n발급받은 Gemini API 키(AIzaSy...)를 입력해주세요.\n(이 키는 깃허브 서버가 아닌 현재 사용 중인 기기에만 안전하게 저장됩니다.)");
-                if (apiKey) {
-                    localStorage.setItem('my_gemini_key', apiKey.trim());
-                } else {
-                    // 키 입력을 취소한 경우 초기 화면으로 복귀
-                    alert("API 키가 입력되지 않아 초기 화면으로 돌아갑니다. 새로고침 후 다시 시도해주세요.");
-                    showView('setup-view');
-                    resetCard();
-                    return; 
-                }
-            }
-
-            // 최신 안정화 모델(gemini-1.5-flash)로 호출 URL 업데이트
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
             try {
@@ -376,44 +367,30 @@
                     body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) throw new Error("API Network response was not ok");
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    const msg = errData.error?.message || `통신 실패 (코드: ${response.status})`;
+                    throw new Error(msg);
+                }
 
                 const result = await response.json();
                 
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    
+                if (result.candidates && result.candidates[0]?.content?.parts[0]?.text) {
                     const jsonText = result.candidates[0].content.parts[0].text;
                     const parsedData = JSON.parse(jsonText);
                     
                     updateCardUI(parsedData);
                     showView('learning-view');
-
                 } else {
-                    throw new Error("Invalid response format from API");
+                    throw new Error("AI 응답 형식이 올바르지 않습니다.");
                 }
 
             } catch (error) {
                 console.error("Error fetching data:", error);
-                
-                // 에러 발생 시 localStorage에 잘못된 키가 저장되어 있을 수 있으므로 초기화 유도
-                if (retryCount >= 2) {
-                    // 키가 잘못되었을 가능성이 높으므로 삭제하여 다음 번에 다시 묻도록 설정
-                    localStorage.removeItem('my_gemini_key');
-                }
-
-                // Exponential backoff logic for retries
-                if (retryCount < 2) {
-                    const delay = Math.pow(2, retryCount) * 1000;
-                    setTimeout(() => fetchNextItem(retryCount + 1), delay);
-                } else {
-                    showView('learning-view');
-                    errorMsgEl.classList.remove('hidden');
-                    errorMsgEl.innerText = "API 통신 오류가 발생했습니다. 키가 잘못되었거나 한도를 초과했습니다. 다시 시작해주세요.";
-                }
+                showView('learning-view');
+                errorMsgEl.classList.remove('hidden');
+                errorMsgEl.innerText = `⚠️ 오류: ${error.message}\n(API 키를 다시 확인하거나 구글 AI Studio에서 새로 생성해 보세요)`;
             } finally {
-                // Restore button state
                 nextBtn.disabled = false;
                 nextBtn.innerHTML = `다음 
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -425,16 +402,13 @@
         function updateCardUI(data) {
             const targetLang = document.getElementById('target-lang').value;
             
-            // 현재 듣기에 사용할 텍스트와 언어를 저장
             currentTargetText = data.targetText;
             currentTargetLang = targetLang;
-            currentExtraData = data; // 예문 및 단어장 데이터 저장
+            currentExtraData = data;
             
-            // 토글 버튼 텍스트 초기화
             const extraBtn = document.getElementById('toggle-extra-btn');
             extraBtn.innerText = currentMode === 'word' ? '예문 보기 👀' : '단어장 보기 📝';
             
-            // Adjust text sizes based on length
             if(data.targetText.length > 30) {
                 targetTextEl.classList.remove('text-4xl');
                 targetTextEl.classList.add('text-2xl');
@@ -449,7 +423,6 @@
             translationTextEl.innerText = data.translation;
         }
 
-        // 추가 정보(예문/단어장) 토글 함수
         function toggleExtraInfo() {
             const container = document.getElementById('extra-info-container');
             const btn = document.getElementById('toggle-extra-btn');
@@ -458,10 +431,9 @@
             if (isHidden) {
                 let htmlContent = '';
                 
-                // 단어 모드: 예문 표시
                 if (currentMode === 'word' && currentExtraData.example) {
                     const ex = currentExtraData.example;
-                    const safeText = ex.text.replace(/'/g, "\\'"); // 듣기 버튼에 텍스트 주입 시 따옴표 오류 방지
+                    const safeText = ex.text.replace(/'/g, "\\'");
                     
                     htmlContent = `
                         <div class="border-l-4 border-indigo-400 pl-3 py-1">
@@ -474,7 +446,6 @@
                         </div>
                     `;
                 } 
-                // 문장 모드: 단어장 표시
                 else if (currentMode === 'sentence' && currentExtraData.vocabulary && currentExtraData.vocabulary.length > 0) {
                     currentExtraData.vocabulary.forEach(v => {
                         const safeText = v.word.replace(/'/g, "\\'");
@@ -505,29 +476,20 @@
             }
         }
 
-        // Web Speech API를 활용한 듣기 기능
         function playAudio(event, textToPlay = currentTargetText) {
-            // 카드가 뒤집히는 것을 방지
             if (event) event.stopPropagation(); 
-            
             if (!textToPlay) return;
 
-            // 기존에 재생 중이던 음성이 있다면 취소
             window.speechSynthesis.cancel();
 
             const utterance = new SpeechSynthesisUtterance(textToPlay);
-            // 선택한 언어에 맞는 발음 코드를 할당 (기본값 en-US)
             utterance.lang = langCodes[currentTargetLang] || 'en-US';
-            
-            // 학습용이므로 원어민 기본 속도보다 약간 천천히 읽어주도록 설정 (0.85)
             utterance.rate = 0.85; 
             
             window.speechSynthesis.speak(utterance);
         }
 
-        // Initialize view properly
         showView('setup-view');
-
     </script>
 </body>
 </html>
